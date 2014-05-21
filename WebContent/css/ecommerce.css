@@ -1,0 +1,30 @@
+body{
+	background: #f1f4f9 !important;
+-webkit-font-smoothing: antialiased;
+}
+
+#login{
+	  position: absolute;
+	left: 50%;
+    top: 50%;
+     transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+	
+}
+
+.panel{
+	background:white !important;
+	padding: .2em;
+}
+.selectToRemove{
+	margin-top:13px !important;
+}
+
+.breakword{
+	word-break: break-all;
+}
+.removeItems{
+	cursor:point;
+}
