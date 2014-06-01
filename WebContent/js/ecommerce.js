@@ -174,7 +174,7 @@ $(document).ready(function(){
 			});
 			 
 			request.done(function( data ) {
-				console.log(data);
+				window.cartlist= data;
 				$('.cartzone').fadeOut(500,function(){
 					$(this).empty();
 					if(data.cartList.length>0){
@@ -184,6 +184,7 @@ $(document).ready(function(){
 						$('.id_'+key).append('<th id='+value.id+' class="text-center cid"><h5><small>'+value.id+'</small></h5></th>');
 						$('.id_'+key).append('<th class="text-center"><h5 style="max-width:100px" class="breakword"><small>'+value.title+'</small></h5></th>');
 						$('.id_'+key).append('<th class="text-center"><h5><small>$'+value.price+'</small></h5></th>');
+						$('.id_'+key).append('<th class="text-center"><h5><small>'+value.count+'</small></h5></th>');
 						$('.id_'+key).append('<th class="text-center"><div class="row"><div class="large-12 columns"><input name="selectToRemove" id="'+value.id+'" class="selectToRemove" type="checkbox"></div></div></th>');
 						$('.additem').append("</tr>");
 					});
@@ -191,6 +192,7 @@ $(document).ready(function(){
 					$('.pricetr').append('<th class="text-center cid"><h5><small></small></h5></th>');
 					$('.pricetr').append('<th class="text-center cid"><h5><small></small></h5></th>');
 					$('.pricetr').append('<th class="text-center cid"><h5><small>$'+parseFloat(data.totalPriceInCart).toFixed(2)+'</small></h5></th>');
+					$('.pricetr').append('<th class="text-center cid"><h5><small>'+data.totalCount+'</small></h5></th>');
 					$('.pricetr').append('<th class="text-center cid"><h5 style="cursor:point"><small class="removeItems"><a>Remove</a></small></h5></th>');
 
 					$('.additem').append('</tr>');
@@ -198,7 +200,7 @@ $(document).ready(function(){
 					
 					if($('.checkout').length==0){
 					$('#logoutzone').removeClass('end');
-					$('#checkzone').append("<div class='large-6 columns text-right'><a class='checkout button alert tiny'>Check Out</a></div>");
+					$('#checkzone').append("<div class='large-6 columns text-right'><a  class='checkout button alert tiny' data-reveal-id='modal'  data-reveal-ajax='true'>Check Out</a></div>");
 					}
 					}
 					else{
@@ -206,8 +208,6 @@ $(document).ready(function(){
 						$('.checkout').remove();
 					}
 		          	   
-
-
 					$(this).fadeIn();
 				});
 
@@ -221,7 +221,443 @@ $(document).ready(function(){
 		
 	} 
 	
+	
+	
+	/**
+	 * pass the data to the restful server
+	 */
+	$('body').on('click','.confirmToCheck',function(){
+		if(window.cartlist!='' && $('#address_zone').val()){
+			$.getJSON('http://127.0.0.1:8081/E-Commerce-shipping-component/rest/orders/?name='+$('#userName').text()+'&city='+$('#address_zone').val()+'&item='+window.cartlist.cartList.length, function( data ) {
+				if(data.status=='address is incorrect'){//address is incorrect
+					if($('#error_display').length>0){
+						$('#error_display').remove();
+					}
+					$('.confirmToCheck').remove();
+					if($('#addressEmpty').length>0){
+						$('#addressEmpty').remove();
+					}
+					$('<div id="error_display"><div class="row "><div class="large-12 columns"><div data-alert class="alert-box alert">'+data.status+'</div></div></div><div class="row"><div class="large-6 columns"><a class="button secondary tiny text-left" id="discardCart">Discarding order</a></div><div class="large-6 columns text-right"><a class="button tiny confirmToCheck">re-confirm</a></div></div></div>').insertAfter('#inforzone');
 
+				}
+				else if(data.status=='address is correct'){//address is correct
+					//if address is validation, we should get the costs fee
+					$('#modalWarp').fadeOut(500,function(){
+						$('.cartzone>table').fadeOut().remove();
+						$(this).empty();
+						$(this).append('<h4><small>OrderID: '+data.orderID+'</small></h4>');
+							$(this).append("<table><tbody class='orderTable'></tbody></table>");
+							$.each(window.cartlist.cartList,function(key,value){
+								$('.orderTable').append('<tr class="id_order_'+key+'">');
+								$('.id_order_'+key).append('<th class="text-center cid"><img src="'+value.imgeUrl+'"></th>');
+								$('.id_order_'+key).append('<th class="text-center cid"><h5><small>'+value.id+'</small></h5></th>');
+								$('.id_order_'+key).append('<th class="text-center"><h5><small>'+value.title+'</small></h5></th>');
+								$('.id_order_'+key).append('<th class="text-center"><h5><small>$'+value.price+'</small></h5></th>');
+								$('.id_order_'+key).append('<th class="text-center"><h5><small>$'+value.count+'</small></h5></th>');
+								$('.orderTable').append("</tr>");
+							});
+							$('.orderTable').append('<tr class="orderProductionPrice">');
+							$('.orderProductionPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderProductionPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderProductionPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderProductionPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderProductionPrice').append('<th class="text-center cid"><h5><small>Products Cost: $'+parseFloat(window.cartlist.totalPriceInCart).toFixed(2)+'</small></h5></th>');
+							$('.orderTable').append('</tr>');
+							
+							
+							$('.orderTable').append('<tr class="orderCostPrice">');
+							$('.orderCostPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderCostPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderCostPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderCostPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.orderCostPrice').append('<th class="text-center cid"><h5><small>Shipping Cost: $'+data.shippingFee+'</small></h5></th>');
+							$('.orderTable').append('</tr>');
+							
+							$('.orderTable').append('<tr class="TotalPrice">');
+							$('.TotalPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.TotalPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.TotalPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.TotalPrice').append('<th class="text-center cid"><h5><small></small></h5></th>');
+							$('.TotalPrice').append('<th class="text-center cid"><h5><small>Total Price: $'+(parseFloat(data.shippingFee)+parseFloat(window.cartlist.totalPriceInCart))+'</small></h5></th>');
+							$('.orderTable').append('</tr>');
+							$('<div class="row"><div class="large-12 columns text-center"><a id="closeValidedbutton" class="success button tiny">close </a></div></div>').insertAfter('table');
+							$(this).fadeIn();
+							
+							var object={};
+							object['orderID'] = data.orderID;
+							object['cartList'] = JSON.stringify(window.cartlist.cartList);
+							object['name'] = window.cartlist.name;
+							object['totalCount']= window.cartlist.totalCount;
+							object['totalPriceInCart']= window.cartlist.totalPriceInCart;
+							object['city']= data.city;
+							object['shippingFee'] = data.shippingFee;
+							
+							//request to clearing the cartlist because the order has been record in window.cartlist
+							requestToClearingCart();
+							
+							//save to database
+						
+							requestToSaveOrder(object);
+						
+						
+					});	
+					
+					
+				}
+				
+				
+
+			});				
+		}
+		else{
+			$('<div class="row" id="addressEmpty"><div class="large-12 columns"><div data-alert class="alert-box alert">The address cannot be empty</div></div>').insertAfter('#inforzone');
+		}
+		
+		
+	});
+	
+	/**
+	 * end
+	 */
+	
+	
+	/**
+	 * rest cart
+	 */
+	$('body').on('click','#discardCart',function(){
+		$('table').fadeOut(500,function(){
+			$(this).remove();
+			
+			requestToClearingCart();
+			 $('#modal').foundation('reveal', 'close');//close the modal
+	         $('#modalWarp').empty().append('<div class="row" id="inforzone"><div class="large-12 columns "><input type="text" id="address_zone" placeholder="Please input the address"></div></div><div class="row"><div class="large-12 columns text-center"><a class="button tiny confirmToCheck">Confirm</a></div></div>');	//resotre the check out button to primitve status
+			
+			
+		});
+		
+		
+		
+	});
+	
+	/**
+	 * end
+	 */
+	
+	
+	
+	/*
+	 * empty carlist if user click discardCart and confrim AJAX call
+	 */
+	
+	function requestToClearingCart(){
+		var request = $.ajax({
+			  url: 'production',
+			  type: "POST",
+			  data:{'ClearingCart':'yes'},
+			  dataType: 'html'
+			});
+		request.done(function( data ) {
+			if(data=='done'){
+				$('.cartzone').append('<h4><small>Cart is Empty</small></h4>');//change the cart status
+				$('.checkout').remove();//remove the checkout button
+				$('#searchInput').focus();	//now fouces on search bar
+					
+			}
+		});
+		
+		request.fail(function( jqXHR, textStatus ) {
+			  alert( "Request failed: " + textStatus );
+			});
+		
+		
+			
+	}
+	
+	
+	/**
+	 * end
+	 */
+	
+	
+	/**
+	 * request to save the order to database (AJAX call)
+	 */
+	function requestToSaveOrder(object){
+	
+		var request = $.ajax({
+			  url: 'usersManagement',
+			  type: "POST",
+			  data:object,
+			  dataType: 'html'
+			});
+		request.done(function( data ) {
+			if(data=='done'){
+				
+			}
+		});
+		
+		request.fail(function( jqXHR, textStatus ) {
+			  alert( "Request failed: " + textStatus );
+			});
+	
+	}
+
+	/**
+	 * 
+	 */
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * click button to close modal
+	 */
+	
+	$('body').on('click','#closeValidedbutton',function(){
+		$('#modalWarp').empty().append('<div class="row" id="inforzone"><div class="large-12 columns "><input type="text" id="address_zone" placeholder="Please input the address"></div></div><div class="row"><div class="large-12 columns text-center"><a class="button tiny confirmToCheck">Confirm</a></div></div>');
+		 $('#modal').foundation('reveal', 'close');//close the modal
+	});
+	/**
+	 * end
+	 */
+	
+	
+	
+	
+	
+	
+	/**
+	 * click to change the order status
+	 */
+	$('body').on('click','.changeOrderStatus',function(){
+		var getorderstatus = $(this).parent().parent().parent().parent().find('.orderstatus');
+		var selectStauts =$(this).parent().parent().parent().find('.selectStatus').val();
+		var currentOrderID = $(this).attr('id');
+		
+		var request = $.ajax({
+			  url: 'adminManagement',
+			  type: "POST",
+			  data:{'selectStauts':selectStauts,'currentOrderID':currentOrderID},
+			  dataType: 'html'
+			});
+		request.done(function( data ) {
+			if(data=='done'){
+				getorderstatus.fadeOut(500,getorderstatus.text(selectStauts).fadeIn());
+			}
+		});
+		
+		request.fail(function( jqXHR, textStatus ) {
+			  alert( "Request failed: " + textStatus );
+			});
+		
+		
+	});
+	
+	/**
+	 * end
+	 */
+	
+	
+	
+	/**
+	 * click to view detail info in administrator mode
+	 */
+	
+	$('#orderModal').data('reveal-init', {
+	    animation: 'fadeAndPop',
+	    animation_speed: 250,
+	    dismiss_modal_class: 'close-reveal-modal',
+	    bg_class: 'reveal-modal-bg',
+	    bg : $('.reveal-modal-bg'),
+	    css : {
+	        open : {
+	            'opacity': 0,
+	            'visibility': 'visible',
+	            'display' : 'block'
+	        },
+	        close : {
+	            'opacity': 1,
+	            'visibility': 'hidden',
+	            'display': 'none'
+	        }
+	    }
+	});
+	
+	
+	
+	
+	$('body').on('click','#closeDetail',function(){
+		$('#orderModal').foundation('reveal', 'close');
+
+	});
+	$('body').on('click','.queryDetailByOrderID',function(){
+		
+		//initial reveal modal
+		$('#orderModal').foundation('reveal', 'open','usersManagement');
+		
+		var getQueryID = $(this).attr('id');
+		
+		//ready to AJAX call
+		var request = $.ajax({
+			  url: 'adminManagement',
+			  type: "POST",
+			  data:{'queryDetailForOrder':getQueryID},
+			  dataType: 'json'
+			});
+		request.done(function( data ) {
+			console.log(data);
+			//get json result
+			$('#orderModal').empty();
+
+			$('#orderModal').append("<table id='itemDetailTable'><tbody class='orderTable'></tbody></table>");
+			$.each(data,function(key,value){
+				$('#itemDetailTable').append('<tr class="id_order_'+key+'">');
+				$('.id_order_'+key).append('<th class="text-center cid"><img src="'+value.productionImageUrl+'"></th>');
+				$('.id_order_'+key).append('<th class="text-center cid"><h5><small>ProductionID: '+value.productionID+'</small></h5></th>');
+				$('.id_order_'+key).append('<th class="text-center cid"><h5><small>Title: '+value.productionName+'</small></h5></th>');
+				$('.id_order_'+key).append('<th class="text-center"><h5><small>Description: '+value.productionDescription+'</small></h5></th>');
+				$('.id_order_'+key).append('<th class="text-center"><h5><small>Price: $'+value.productionPrice+'</small></h5></th>');
+				$('.id_order_'+key).append('<th class="text-center"><h5><small>Number: '+value.count+'</small></h5></th>');
+				$('#itemDetailTable').append("</tr>");
+			});
+	
+			$('<div class="row"><div class="large-12 columns text-center"><a id="closeDetail" class="success button tiny">close </a></div></div>').insertAfter('#itemDetailTable');
+
+			
+		});
+		
+		request.fail(function( jqXHR, textStatus ) {
+			  alert( "Request failed: " + textStatus );
+			});
+		
+		
+		
+	});
+	
+	
+	
+	
+	/**
+	 * end
+	 */
+	
+	
+	
+	/**
+	 * user to check the order
+	 */
+	
+	$('body').on('click','#orderbutton',function(){
+		
+		var request = $.ajax({
+			  url: 'usersManagement',
+			  type: "GET",
+			  dataType: 'json'
+			});
+		request.done(function( data ) {
+			//if the data length is longer than 0, then shows records
+			if(data.length>0){
+				//ready to insert the data to the table
+				$('#orderModal').empty().append('<table id="userOrderTable"><thead><tr><th>Order ID</th><th>Order Status</th><th>items number</th><th>Address</th><th>Items fee</th><th>Shipping fee</th><th>Total fee</th><th style="width:200px;text-align: center">Created Time</th><th>User</th><th>Operation</th></tr></thead><tbody></tbody></table>');
+				$.each(data,function(key,value){
+					
+					$('#userOrderTable>tbody').append('<tr class="id_order_'+key+'">');
+					$('.id_order_'+key).append('<th><h5><small>'+value.orderID+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.orderStatus+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.countsOfProductions+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.address+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>$'+value.totalProductionsPrice+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>$'+value.toalShippingFee+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>$'+value.totalFee+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.orderTime+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.user_name+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small><a  data-reveal-id="orderDetailModal"  data-reveal-ajax="true" class="usertoViewDetail" id="'+value.orderID+'"> view detail</a></small></h5></th>');
+					$('#userOrderTable>tbody').append('<tr>');
+	
+				});
+				$('<div class="row"><div class="large-12 columns text-center"><a id="closeDetail" class="success button tiny">close </a></div></div>').insertAfter('#userOrderTable');
+
+			}
+			//else the data length is eaual 0 meaning that there is no record
+			else{
+				$('#orderModal').empty().append('Sorry, it looks like you do not have the order yet!');
+			}
+	
+
+			
+		});
+		
+		request.fail(function( jqXHR, textStatus ) {
+			  alert( "Request failed: " + textStatus );
+			});
+		
+
+	});
+	
+	/**
+	 * end
+	 */
+	
+	
+	/**
+	 * user should be able to click the userViewDetail to see the deatil items' information through another page
+	 */
+	
+	$('body').on('click','.usertoViewDetail',function(){
+		var getUserOrderID = $(this).attr('id');
+		
+		var request = $.ajax({
+			  url: 'usersManagement',
+			  type: "GET",
+			  data:{'userOrderID':getUserOrderID},
+			  dataType: 'json'
+			});
+		request.done(function( data ) {
+			//if the data length is longer than 0, then shows records
+				//ready to insert the data to the table
+				$('#orderDetailModal').empty().append('<table id="userDetailOrderTable"><thead><tr><th>Production Image</th><th>Production ID</th><th>Production Name</th><th>Description</th><th>Items fee</th><th>Number</th></tr></thead><tbody></tbody></table>');
+				$.each(data,function(key,value){
+					
+					$('#userDetailOrderTable>tbody').append('<tr class="id_order_'+key+'">');
+					$('.id_order_'+key).append('<th class="text-center cid"><img src="'+value.productionImageUrl+'"></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.productionID+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.productionName+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.productionDescription+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>$'+value.productionPrice+'</small></h5></th>');
+					$('.id_order_'+key).append('<th><h5><small>'+value.count+'</small></h5></th>');
+					$('#userDetailOrderTable>tbody').append('<tr>');
+	
+				});
+				$('<div class="row"><div class="large-12 columns text-center"><a id="closeDetail" class="success button tiny">close </a></div></div>').insertAfter('#userDetailOrderTable');
+
+			
+		});
+		
+		request.fail(function( jqXHR, textStatus ) {
+			  alert( "Request failed: " + textStatus );
+			});
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	});
+	
+	/**
+	 * end
+	 */
+	
+	
+	
+	
     	
 });
 

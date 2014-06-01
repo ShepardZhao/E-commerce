@@ -18,6 +18,7 @@ import java.util.*;
 	private String pImgeUrl;
 	private String pDescription;
 	private String pPrice;
+	private final String pCount="1";
 	private LinkedHashMap<String,String> productionMap = new LinkedHashMap<String,String>();
 	
 	/**
@@ -53,6 +54,8 @@ import java.util.*;
 		productionMap.put("imgeUrl", this.pImgeUrl);
 		productionMap.put("description", this.pDescription);
 		productionMap.put("price", this.pPrice);
+		productionMap.put("count", pCount);
+
 	}
 	
 	

@@ -36,7 +36,8 @@ public class ProductionServlet extends HttpServlet {
 		boolean UserRoleAdmin = request.isUserInRole("Administrator");
 		boolean UserRoleUser = request.isUserInRole("User");
 		if(UserRoleAdmin){
-			RequestDispatcher view = request.getRequestDispatcher("/adminManagement.jsp?userName="+loginedName);
+			//if current user is administrator then pass to adminMangement servlet
+			RequestDispatcher view = request.getRequestDispatcher("/adminManagement?userName="+loginedName);
 			view.forward(request,response);
 		}
 		else if(UserRoleUser){
@@ -59,10 +60,18 @@ public class ProductionServlet extends HttpServlet {
 		response.setContentType("text/html;charset=UTF-8");
 	    PrintWriter printWriter  = response.getWriter();
 
+	    
+	    //ready to clearing the cart
+	    if(request.getParameter("ClearingCart")!=null && request.getParameter("ClearingCart").equals("yes")){
+	    	request.getServletContext().setAttribute(loginedName, null);
+	    	printWriter.write("done");
+	    }
+	    
+	    
 		/**
 		 * if get paramter addItem and its value is true, then add new production into the cart list
 		 */
-		if(request.getParameter("ModifiyCart").equals("add")){
+		if(request.getParameter("ModifiyCart")!=null && request.getParameter("ModifiyCart").equals("add")){
 		String getId =request.getParameter("id");
 		String getTitle =request.getParameter("title");
 		String getImgUrl =request.getParameter("imgUrl");
@@ -71,13 +80,12 @@ public class ProductionServlet extends HttpServlet {
 		//return the production LinkedhashMap only
 		Production production = new Production(getId,getTitle,getImgUrl,getDescrption,getPrice);
 		CartAdd cartAdd = new CartAdd(loginedName,request,production);
-		String a =cartAdd.addToCartList();
-		printWriter.write(a);//generate the json and return to js page to process		
+		printWriter.write(cartAdd.addToCartList());//generate the json and return to js page to process		
 	    }
 		/**
 		 * if the paramter removeItem and its value is true, then remove current item from servletContext() list
 		 */
-		else if(request.getParameter("ModifiyCart").equals("remove")){
+		else if(request.getParameter("ModifiyCart")!=null && request.getParameter("ModifiyCart").equals("remove")){
 			String getIdArray =request.getParameter("idlist");
 			CartRemove cartRemove = new CartRemove(loginedName,request,getIdArray);
 			printWriter.print(cartRemove.getRemovedCart());//remove item from servletContext() and update it

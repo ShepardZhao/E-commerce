@@ -5,17 +5,34 @@ import javax.servlet.http.HttpServletRequest;
 import org.json.simple.*;
 
 public class CartRemove extends Cart{
-
-	  //construct for remove the item 
+	/**
+	 * fields
+	 */
 	   private JSONArray idList;
-		public CartRemove(String userName ,HttpServletRequest request,String idList){
+	/**
+	 * end
+	 */
+	   
+	   
+	   
+	 /**
+	 * Constructor
+	 * @param userName
+	 * @param request
+	 * @param idList
+	 */
+	   public CartRemove(String userName ,HttpServletRequest request,String idList){
 			super(userName,request);
 			this.idList= (JSONArray)JSONValue.parse(idList);
 		}
 		
-		
-
-	    //remove the items from chart
+	 /**
+	  * end  
+	  */
+	   
+	  /**
+	   * remove the item from the chart 
+	   */
 	    
 	    public String getRemovedCart(){
 			List<LinkedHashMap<String,String>> restoredProductionList = this.getCartList();
@@ -26,11 +43,12 @@ public class CartRemove extends Cart{
 					break;
 				}
 				
+				}
 			}
-			}
+	    	
 	    	this.productionList.addAll(restoredProductionList);
 	    	this.setCart(restoredProductionList);
-	    	this.setJsonCartList(this.CartJsonIncludesTotalprices());
+	    	this.resetTotalCount(restoredProductionList);
 	    	return this.CartJsonIncludesTotalprices();
 		
 		}

@@ -66,59 +66,15 @@
  
 
           <div class=" panel">
-          	<h2 style="color:#000"><small>Hello, <%=request.getParameter("userName") %> </small></h2>
+          	<div class="row"><div class="large-7 columns"><h2 style="color:#000"><small>Hello, <i id="userName"><%=request.getParameter("userName") %></i> </small></h2></div><div class="large-5 columns text-right"><a id="orderbutton" data-reveal-id="orderModal"  data-reveal-ajax="true" class="button secondary tiny" style="top:10px">My order</a></div></div>
             <h3><small>welcome to back store</small></h3>            
           </div>
           <div class="row">
           <div class="large-12 columns">
           	<div class="panel cartzone">
-          	<% 
-				String username = request.getParameter("userName");
-          		String accordinglyProductionly = (String) application.getAttribute(username+"json");
-         	
-          		if(accordinglyProductionly!=null && !accordinglyProductionly.isEmpty()){
-          			Object obj=JSONValue.parse(accordinglyProductionly);
-              	 	JSONObject getobj=(JSONObject)obj;
-          			JSONArray productionListArray=(JSONArray)(getobj.get("cartList"));
-          		%>
-          		<table>
-          			<tbody class='additem'>
-          				<% for(int i=0;i<productionListArray.size();i++){
-          					JSONObject getProductionlist=(JSONObject)productionListArray.get(i);
-          				%>
-        					 <tr  class="id_<%=i%>">
-         				
-          					<% if(getProductionlist.containsKey("id")){%>
-          					   <th id=<%=getProductionlist.get("id") %> class="text-center cid"><h5><small><%=getProductionlist.get("id")%></small></h5></th>
-          					
-          					<% }%>	
-          					
-          					<% if(getProductionlist.containsKey("title") ){%>
-          					   <th class="text-center"><h5 style="max-width:100px" class="breakword"><small><%=getProductionlist.get("title") %></small></h5></th>
-          					<% }%>	
-          					
-          					
-          					<% if(getProductionlist.containsKey("price") ){%>
-          					   <th class="text-center"><h5><small>$<%=getProductionlist.get("price") %></small></h5></th>
-          					<% }%>	
-          				          						
-          				
-          				    <th class="text-center"><div class="row"><div class="large-12 columns"><input name="selectToRemove" class="selectToRemove" type="checkbox"></div></div></th>
-          				
-         					</tr>          				
-          				<%}%>
-          				<tr class="pricetr">
-          				<th class="text-center cid"><h5><small></small></h5></th>
-        				<th class="text-center cid"><h5><small></small></h5></th>
-        				<th class="text-center cid"><h5><small>$<%=getobj.get("totalPriceInCart") %></small></h5></th>
-        				<th class="text-center cid"><h5 style="cursor:point"><small class="removeItems"><a>Remove</a></small></h5></th>
-          				</tr>
-          			</tbody>
-          		</table>
-          	<% }else{%>
+ 	
           	   <h4><small>Cart is Empty</small></h4>
-          	
-          	<%} %>
+                   	
           	</div>
           
           </div>
@@ -128,19 +84,12 @@
          
           
           <div class="row" id="checkzone">
-          <%if(accordinglyProductionly!=null && !accordinglyProductionly.isEmpty()) {%>
-          <div class="large-6 columns" id="logoutzone">
-          <a href="${pageContext.request.contextPath}/logout" class="button tiny">Logo Out</a>
-          </div>
-           <div class="large-6 columns text-right">
-			<a class='checkout button alert tiny'>Check Out</a>        
-		 </div>
-          <%}else{ %>
+       
           
           <div class="large-6 columns end" id="logoutzone">
-          <a href="${pageContext.request.contextPath}/logout" class="button tiny">Logo Out</a>
+          <a href="${pageContext.request.contextPath}/logout" class="button tiny">Logout</a>
           </div>
-          <%} %>
+      
           </div>
          
  
@@ -174,8 +123,11 @@
  
     </div>
   </div>
-    
-<div id="s1"></div>
+ <div id="modal" class="reveal-modal small" data-reveal><div id="modalWarp"><div class="row" id="inforzone"><div class="large-12 columns "><input type="text" id="address_zone" placeholder="Please input the address"></div></div><div class="row"><div class="large-12 columns text-center"><a class="button tiny confirmToCheck">Confirm</a></div></div></div></div>
+ <div id="orderModal" class="reveal-modal large" data-reveal></div>
+ <div id="orderDetailModal" class="reveal-modal large" data-reveal></div>
+ 
+   
 </body>
 	<script src="js/jquery-1.11.0.min.js"></script>
 	<script src="js/foundation.min.js"></script>
